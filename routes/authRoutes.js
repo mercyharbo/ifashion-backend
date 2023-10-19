@@ -3,6 +3,7 @@ const router = express.Router()
 const User = require('../models/userModel')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const verifyToken = require('../middleware/verifyToken')
 
 // Signup route with password hashing
 router.post('/signup', async (req, res) => {
@@ -83,5 +84,38 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' })
   }
 })
+
+// Profile retrieval route with authentication
+router.get('/profile', verifyToken, async (req, res) => {
+  // The user's email is available from the verified token
+  const { email } = req.user;
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Exclude sensitive information like the hashed password before sending the user's profile
+    const userProfile = {
+      email: user.email,
+      address: user.address,
+      phoneNumber: user.phoneNumber,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      gender: user.gender,
+      dateOfBirth: user.dateOfBirth,
+      profilePicture: user.profilePicture,
+    };
+
+    res.json({ success: true, profile: userProfile });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 
 module.exports = router
