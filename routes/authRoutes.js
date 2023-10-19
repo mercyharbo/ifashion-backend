@@ -117,5 +117,32 @@ router.get('/profile', verifyToken, async (req, res) => {
   }
 });
 
+// Update the user's profile (multiple fields)
+router.put('/profile', verifyToken, async (req, res) => {
+  try {
+    const { email, firstName, lastName, address, phoneNumber, gender, dateOfBirth } = req.body;
+    const user = req.user;
+
+    // Update the fields as needed
+    user.email = email;
+    user.firstName = firstName;
+    user.lastName = lastName;
+    user.address = address;
+    user.phoneNumber = phoneNumber;
+    user.gender = gender;
+    user.dateOfBirth = dateOfBirth;
+
+    await user.save();
+
+    res.json({ success: true, message: 'Profile updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+module.exports = router;
+
+
 
 module.exports = router
