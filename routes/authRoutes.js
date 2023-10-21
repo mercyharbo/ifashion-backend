@@ -4,6 +4,7 @@ const User = require('../models/userModel')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const verifyToken = require('../middleware/verifyToken')
+const { revokeToken } = require('../utils/tokenUtils')
 
 // Signup route with password hashing
 router.post('/signup', async (req, res) => {
@@ -16,7 +17,6 @@ router.post('/signup', async (req, res) => {
     lastName,
     gender,
     dateOfBirth,
-    profilePicture,
   } = req.body
 
   try {
@@ -107,7 +107,6 @@ router.get('/profile', verifyToken, async (req, res) => {
       lastName: user.lastName,
       gender: user.gender,
       dateOfBirth: user.dateOfBirth,
-      profilePicture: user.profilePicture,
     }
 
     res.json({ success: true, profile: userProfile })
@@ -147,6 +146,24 @@ router.put('/profile', verifyToken, async (req, res) => {
     console.error(err)
     res.status(500).json({ success: false, message: 'Server error' })
   }
+})
+
+// Logout route
+router.post('/logout', verifyToken, async (req, res) => {
+  if (!req.user) {
+    return res
+      .status(401)
+      .json({ success: false, message: 'Token not provided or invalid' })
+  }
+
+  // Extract the token from the user object if needed
+  const token = req.headers.authorization.split(' ')[1]
+
+  // Invalidate the token by adding it to the revoked tokens list
+  revokeToken(token, 'user logout')
+
+  // Respond with a success message
+  res.json({ success: true, message: 'Logged out successfully' })
 })
 
 module.exports = router
