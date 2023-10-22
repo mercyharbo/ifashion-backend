@@ -17,6 +17,7 @@ router.post('/signup', async (req, res) => {
     lastName,
     gender,
     dateOfBirth,
+    accountType,
   } = req.body
 
   try {
@@ -41,6 +42,7 @@ router.post('/signup', async (req, res) => {
       lastName,
       gender,
       dateOfBirth,
+      accountType,
     })
 
     await newUser.save()
@@ -107,6 +109,7 @@ router.get('/profile', verifyToken, async (req, res) => {
       lastName: user.lastName,
       gender: user.gender,
       dateOfBirth: user.dateOfBirth,
+      accountType: user.accountType,
     }
 
     res.json({ success: true, profile: userProfile })
@@ -127,6 +130,7 @@ router.put('/profile', verifyToken, async (req, res) => {
       phoneNumber,
       gender,
       dateOfBirth,
+      accountType,
     } = req.body
     const user = req.user
 
@@ -138,6 +142,7 @@ router.put('/profile', verifyToken, async (req, res) => {
     user.phoneNumber = phoneNumber
     user.gender = gender
     user.dateOfBirth = dateOfBirth
+    user.accountType = accountType
 
     await user.save()
 

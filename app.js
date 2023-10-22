@@ -12,7 +12,10 @@ app.use(express.json())
 app.use(cors())
 
 const authRoutes = require('./routes/authRoutes')
+const productRoute = require('./routes/productRoute')
+
 app.use('/user', authRoutes)
+app.use('/', productRoute)
 
 app.listen(PORT, () => {
   console.log('Server is running on http://localhost:8080')
