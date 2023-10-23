@@ -45,11 +45,13 @@ router.get('/products/:id', verifyToken, async (req, res) => {
       res.json({ success: true, product })
     }
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching product details',
-      error: err,
-    })
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: 'Error fetching product details',
+        error: err,
+      })
   }
 })
 
