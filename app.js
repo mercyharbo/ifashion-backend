@@ -8,7 +8,7 @@ const mongoose = require('./config/db')
 
 const PORT = process.env.PORT || 8080
 
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
 app.use(cors())
 
 const authRoutes = require('./routes/authRoutes')
