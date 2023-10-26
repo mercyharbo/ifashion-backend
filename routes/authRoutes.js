@@ -173,37 +173,42 @@ router.post('/logout', verifyToken, async (req, res) => {
 
 // Change password route
 router.put('/change-password', verifyToken, async (req, res) => {
-  const { email, oldPassword, newPassword } = req.body;
+  // The user's email is available from the verified token
+  const { email } = req.user
+  const { oldPassword, newPassword } = req.body
 
   try {
-    // Find the user by email
-    const user = await User.findOne({ email });
+    // Find the user by email (available from the token)
+    const user = await User.findOne({ email })
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({ success: false, message: 'User not found' })
     }
 
     // Compare the provided old password with the hashed password in the database
-    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password)
 
     if (!isPasswordValid) {
-      return res.status(401).json({ success: false, message: 'Invalid old password' });
+      return res
+        .status(401)
+        .json({ success: false, message: 'Invalid old password' })
     }
 
     // Hash the new password before saving it to the database
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10)
 
     // Update the user's password
-    user.password = hashedNewPassword;
+    user.password = hashedNewPassword
 
-    await user.save();
+    await user.save()
 
-    res.json({ success: true, message: 'Password changed successfully' });
+    res.json({ success: true, message: 'Password changed successfully' })
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error(err)
+    res.status(500).json({ success: false, message: 'Server error' })
   }
-});
+})
+
 
 
 module.exports = router
