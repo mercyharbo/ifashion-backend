@@ -10,6 +10,10 @@ const productSchema = new mongoose.Schema({
   images: [String],
   available_sizes: [String],
   inStock: Number,
+  seller: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // Assuming your user model is named 'User'
+  },
   reviews: [
     {
       id: Number,
