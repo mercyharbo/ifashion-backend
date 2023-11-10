@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+
 const Product = require('../models/productModel')
 const requireSellerAuthorization = require('../middleware/sellerAuthorization')
 const verifyToken = require('../middleware/verifyToken')
@@ -12,6 +13,7 @@ router.post(
   async (req, res) => {
     try {
       const newProduct = new Product(req.body)
+      newProduct.seller = req.user.id // Set the seller field to the _id of the logged-in user
       const savedProduct = await newProduct.save()
       res.status(201).json({ success: true, savedProduct })
     } catch (err) {
@@ -25,7 +27,7 @@ router.post(
 // Get a list of all products
 router.get('/products', verifyToken, async (req, res) => {
   try {
-    const products = await Product.find()
+    const products = await Product.find().populate('related')
     res.json({ success: true, products })
   } catch (err) {
     res
@@ -34,24 +36,45 @@ router.get('/products', verifyToken, async (req, res) => {
   }
 })
 
+// Get a list of products posted by the logged-in user
+router.get(
+  '/products/seller',
+  verifyToken,
+  requireSellerAuthorization,
+  async (req, res) => {
+    try {
+      const products = await Product.find({ seller: req.user.id })
+      res.json({ success: true, products })
+    } catch (err) {
+      res.status(500).json({
+        success: false,
+        message: 'Error fetching products',
+        error: err,
+      })
+    }
+  }
+)
+
 // Get product details by ID
 router.get('/products/:id', verifyToken, async (req, res) => {
   const productId = req.params.id
+
   try {
-    const product = await Product.findById(productId)
+    const product = await Product.findById(productId).populate('related')
+
     if (!product) {
       res.status(404).json({ success: false, message: 'Product not found' })
     } else {
+      const relatedProducts = await Product.find({ seller: product.seller })
+      product.related = relatedProducts
       res.json({ success: true, product })
     }
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: 'Error fetching product details',
-        error: err,
-      })
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching product details',
+      error: err,
+    })
   }
 })
 
